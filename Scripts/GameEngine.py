@@ -17,6 +17,7 @@ class Engine():
         self.flags = flags
         self.window = pg.display.set_mode((self.width, self.height), self.flags)
         self.clock = pg.time.Clock()
+        self.all_events = [pg.QUIT, pg.KEYDOWN, pg.KEYUP, pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP, pg.MOUSEMOTION]
         #Links to other Modules
         self.audio = AH
         self.image = IH
@@ -44,7 +45,7 @@ class Engine():
 
         while self.game_is_running:
             #Check for system events
-            for event in pg.event.get():
+            for event in pg.event.get(self.all_events):
                 if event.type == pg.QUIT:
                     self.game_is_running = False
                     break
@@ -54,7 +55,15 @@ class Engine():
                 #Check for key release
                 elif event.type == pg.KEYUP:
                     self.pressed_keys[event.key] = 0
-            dt = self.clock(self.options['fps'])
+                #Ckeck for mouse click
+                elif (event.type == pg.MOUSEBUTTONDOWN) or (
+                    event.type == pg.MOUSEBUTTONUP):
+                    self.pressed_keys['mouse_buttons'] = pg.mouse.get_pressed()
+                #Check for mouse motion
+                elif event.type == pg.MOUSEMOTION:
+                    self.pressed_keys['mouse_pos'] = pg.mouse.get_pos()
+
+            dt = self.clock.tick_busy_loop(self.options['max_fps'])
             #Update then draw items to window
             self.window.fill((120, 120, 120))
             for key in self.scene_objects.keys():
